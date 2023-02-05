@@ -1,0 +1,195 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>SVG Box collision</title>
+  <meta name="description" content="SVG direct draw">
+
+  <script src="matter.js"></script>
+  <script src="matter-attractors.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <style>
+      body, html {
+        height: 100%;
+        margin: 0;
+      }
+
+  </style>
+</head>
+<body onmousedown="gravity()">
+
+<script>
+
+Matter.use(
+  'matter-attractors' // PLUGIN_NAME
+);
+// module aliases
+var Engine = Matter.Engine,
+    Render = Matter.Render,
+    Runner = Matter.Runner,
+    Bodies = Matter.Bodies,
+    Common = Matter.Common,
+    Events = Matter.Events,
+    Mouse = Matter.Mouse,
+    Body = Matter.Body,
+    World = Matter.World,
+    Composite = Matter.Composite;
+
+
+
+
+var engine = Engine.create();
+var render = Render.create({
+    element: document.body,
+    engine: engine,
+    options: {
+      wireframes: false,
+      background: "rgb(0,0,0)"
+}});
+render.canvas.width = window.innerWidth;
+render.canvas.height = window.innerHeight;
+
+
+  // create runner
+var runner = Runner.create();
+
+Runner.run(runner, engine);
+Render.run(render);
+
+ var world = engine.world;
+  world.gravity.scale = 0;
+// create an engine
+
+document.onmousemove = function(event) {
+    pointerX = event.pageX;
+	pointerY = event.pageY;
+}
+
+// create a renderer
+
+
+// create two boxes and a ground
+var boxA = Bodies.rectangle(400, 200, 80, 80);
+var boxB = Bodies.rectangle(450, 50, 80, 80 );
+var boxC = Bodies.circle(window.innerWidth/2, window.innerHeight/2, 1, { isStatic: true,  plugin: {
+      attractors: [
+        function(bodyA, bodyB) {
+          return {
+            x: (bodyA.position.x - bodyB.position.x) * 1e-7,
+            y: (bodyA.position.y - bodyB.position.y) * 1e-7,
+          };
+        }
+      ]
+    }});
+
+World.add(world, boxC);
+var ground = Bodies.rectangle(window.innerWidth/2, window.innerHeight, window.innerWidth, 60, { isStatic: true  });
+for (var i = 0; i < 150; i += 1) {
+  var body = Bodies.polygon(
+    Common.random(0, render.canvas.width),
+    Common.random(0, render.options.height),
+    Common.random(1, 5),
+    Common.random() > 0.9 ? Common.random(15, 25) : Common.random(5, 10)
+  );
+
+//  World.add(world, body);
+}
+
+// add all of the bodies to the world
+function gravity()  {
+  var boxA = Bodies.rectangle(pointerX , pointerY , 30, Common.random(5, 20), { render: {fillStyle: "rgb("+Common.random(100, 200)+","+Common.random(50, 200)+","+Common.random(150, 250)+")" }});
+  World.add(world, boxA);
+
+  const bodies = JSON.stringify(boxA, (key, value) =>
+    (key === 'parent' || key === 'parts' || key === 'body') ? undefined : value);
+  console.log(bodies);
+  input(bodies);
+
+
+
+
+}
+
+
+function input(rect) {
+  var form = document.createElement("form");
+      form.setAttribute("method", "post");
+      form.setAttribute("id", "rect-form");
+      form.setAttribute("name", "rect-form");
+      form.setAttribute("action", " ");
+      form.setAttribute("onsubmit", "return false");
+
+
+
+      // Create an input element for Full Name
+      var FN = document.createElement("input");
+      FN.setAttribute("type", "text");
+      FN.setAttribute("name", "rect");
+      FN.setAttribute("value", rect);
+      FN.setAttribute("id", "rect");
+
+       var s = document.createElement("input");
+                s.setAttribute("type", "submit");
+                s.setAttribute("value", "Submit");
+
+      form.appendChild(FN);
+      form.appendChild(s);
+
+      document.getElementsByTagName("body")[0]
+               .appendChild(form);
+      }
+var CSRF_TOKEN = $('meta[name="csrf-token"]').attr('content');
+    $(document).ready(function() {
+    $('#rect-form').on("submit", function(e) {
+        e.preventDefault();
+        var rect = document.getElementById("rect").value;
+
+
+          $.ajax({
+            type: "POST",
+            url: "get_response1.php",
+            data: rect,
+            success: function(data) {
+                alert(rect)
+
+            ;
+            }
+          });
+
+ return false;
+});
+
+});
+
+
+
+// run the renderer
+Render.run(render);
+
+// create runner
+
+
+// run the engine
+Runner.run(runner, engine)
+
+
+</script>
+ <script>
+
+
+
+
+    </script>
+<!-- Cookie Consent by https://www.FreePrivacyPolicy.com -->
+<script type="text/javascript" src="//www.freeprivacypolicy.com/public/cookie-consent/3.1.0/cookie-consent.js"></script>
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', function () {
+cookieconsent.run({"notice_banner_type":"interstitial","consent_type":"express","palette":"dark","language":"en","website_name":"barnaba-barcellona.com","cookies_policy_url":"https://barnaba-barcellona.com/Privacypolicy.html"});
+});
+</script>
+
+</body>
+
+</html>

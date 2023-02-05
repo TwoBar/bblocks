@@ -1,0 +1,689 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>SVG Box collision</title>
+  <meta name="description" content="SVG direct draw">
+
+
+  <script src="matter.js"></script>
+  <script src="matter-attractors.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <style>
+      body, html {
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+      .slider{
+          position: static;
+      width: max-content;
+  height: 10px;
+  -webkit-appearance: none;
+  background: #111;
+  outline: none;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 1);}
+      .slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #00fd0a;
+  cursor: pointer;
+  border: 4px solid #333;
+  box-shadow: -407px 0 0 400px #00fd0a;
+}
+
+  </style>
+    <script>
+
+
+        </script>
+</head>
+<body id="htmlbody" >
+
+<div class="container" style="position: relative;
+  height: 100%;
+  width: 100%;
+">
+  <canvas id="world"  ></canvas>
+  <div class="header" style=" position: absolute;
+  margin-top: -10px;
+  background-color: #1e1e1e;
+
+  left:0;
+  right:0;
+  width:15%;
+  margin:15px;
+  padding:10px;
+  bottom: 10%;
+  font-size: large;">
+<a onclick="showcreate()" style="cursor: pointer; color:white"> X </a>
+      <form name="contact-form1" action="" method="post" id="contact-form1" class="reveal-content">
+     <div class="form-group">
+
+                      <input type="range" min="0" max="3" value="0" class="slider" id="myRange">
+                        <br>
+                        <input type="range" min="3" max="17" value="7" class="slider" id="myRange2">
+                        <br>
+                        <input type="range" min="15" max="240" value="15" class="slider" id="myRange3">
+                        <br>
+                        <input type="range" min="15" max="240" value="15" class="slider" id="myRange4" >
+                        <br>
+                        <input type="range" min="15" max="240" value="15" class="slider" id="myRange5">
+
+                        <br>
+                         <textarea class="form-control" rows="5" id="comments1" placeholder="Enter your message" name="drpmessage"  required style="color: black"></textarea>
+                        <br>
+         <canvas  id="world2" style="width: max-content; height:  max-content; border: 2px solid slategray;"></canvas>
+         <br>
+         <button   style="cursor: pointer; color:white; background-color: #3B3E3E;  border-color: black;" name="drpsubmit" value="drpsubmit"  >Drop</button>
+
+
+                    </div>
+          </form>   
+
+
+
+       <form name="contact-form" action="" method="post" id="contact-form" class="reveal-content">
+      <div class="row">
+                  <div class="col-md-7">
+
+                    <div class="form-group">
+
+                      <input type="hidden" class="form-control"  id="subject" name="your_name" placeholder="uno" value="uno" required style="color: black">
+                    </div>
+                    <div class="form-group" style="display: none;">
+                      <textarea class="form-control" rows="5" id="angle" placeholder="Enter your message" name="angle"  required style="color: black"></textarea>
+                       <textarea class="form-control" rows="5" id="r" placeholder="Enter your message" name="r"  required style="color: black"></textarea>
+                       <textarea class="form-control" rows="5" id="g" placeholder="Enter your message" name="g"  required style="color: black"></textarea>
+                       <textarea class="form-control" rows="5" id="b" placeholder="Enter your message" name="b"  required style="color: black"></textarea>
+                       <textarea class="form-control" rows="5" id="size" placeholder="Enter your message" name="size"  required style="color: black"></textarea>
+                        <textarea class="form-control" rows="5" id="grado" placeholder="Enter your message" name="grado"  required style="color: black"></textarea>
+                        <textarea class="form-control" rows="5" id="comments" placeholder="Enter your message" name="message"  required style="color: black"></textarea>
+                        <button class="btn btn-default btn-lg btn-primary" style="background-color: gray; color: black; border-color: black;" type="submit" name="btnsubmit" value="Submit" id="clickButton">Drop</button>
+                    </div>
+
+                  </div>
+
+                </div>
+              </form>
+  </div>
+
+
+</div>
+<p>Suggestions: <span id="myList"></span></p>
+<p>Suggestions: <span id="txtHint"></span></p>
+<script>
+
+Matter.use(
+  'matter-attractors' // PLUGIN_NAME
+);
+// module aliases
+  let text = "";
+  const sleep = (milliseconds) => {
+      return new Promise(resolve => setTimeout(resolve, milliseconds))
+    }
+
+
+function randomize() {
+    document.getElementById("myRange").value = parseInt(Math.floor(Math.random()*4));
+    document.getElementById("myRange2").value = parseInt((Math.floor(Math.random()*15))+3);
+    document.getElementById("myRange3").value = parseInt((Math.floor(Math.random()*200))+15);
+    document.getElementById("myRange4").value = parseInt((Math.floor(Math.random()*200))+15);
+    document.getElementById("myRange5").value = parseInt((Math.floor(Math.random()*200))+15);
+
+}
+
+window.addEventListener('load', (event) => {
+    randomize()
+
+        var sizeu = document.getElementById("myRange2").value
+     var ru =  document.getElementById("myRange3").value
+      var gu =  document.getElementById("myRange4").value
+      var bu =  document.getElementById("myRange5").value
+    var boxU = Bodies.rectangle(50 , 50 , 50, sizeu, { render: {strokeStyle: '#000000',lineWidth: 2, fillStyle: "rgb("+ru+","+gu+","+bu+")" }});
+   var rotation = document.getElementById("myRange").value
+    rotate(rotation, boxU)
+
+    World.add(world2, boxU);
+
+  console.log('page is fully loaded');
+  var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function() {
+      if (this.readyState == 4 && this.status == 200) {
+        document.getElementById("txtHint").innerHTML = this.responseText;
+         var yoghi = document.getElementById("txtHint").innerHTML;
+         var yoghi = yoghi.split("<br>")
+
+
+         const doSomething = async () => {
+          for (const item of yoghi) {
+            await sleep(3);
+
+            myFunctione(item);
+
+            }
+  }
+
+
+doSomething()
+
+
+
+
+      }
+    };
+      xmlhttp.open("GET", "query.php", true);
+    xmlhttp.send();
+  });
+
+function rotate(times, boxA){
+     for (i = 0; i < times; i++)
+    {
+       Body.rotate( boxA, Math.PI/6);
+    }
+     return boxA
+
+}
+
+function myFunctione(item) {
+  text += item + "<br>";
+   if(item.length > 2){
+
+    load(item);
+
+}
+
+}
+var canvas2 = document.getElementById('world2');
+
+var canvas = document.getElementById('world');
+var Engine = Matter.Engine,
+    Render = Matter.Render,
+    Runner = Matter.Runner,
+    Bodies = Matter.Bodies,
+    Common = Matter.Common,
+    Events = Matter.Events,
+    Mouse = Matter.Mouse,
+    Body = Matter.Body,
+    World = Matter.World,
+    Composite = Matter.Composite;
+
+window.addEventListener('resize', () => {
+  render.bounds.max.x = window.innerWidth;
+  render.bounds.max.y = window.innerHeight;
+  render.options.width = window.innerWidth;
+  render.options.height = window.innerHeight;
+  render.canvas.width = window.innerWidth;
+  render.canvas.height = window.innerHeight;
+
+});
+var engine2 = Engine.create();
+var render2 = Render.create({
+    canvas: canvas2,
+    engine: engine2,
+    options: {
+      wireframes: false,
+      background: "rgb(0,0,0)"
+}});
+render2.canvas.width = 100;
+render2.canvas.height = 100;
+
+
+
+  // create runner
+var runner2 = Runner.create();
+
+Runner.run(runner2, engine2);
+Render.run(render2);
+
+ var world2 = engine2.world;
+  world2.gravity.scale = 0;
+
+document.getElementById("myRange").oninput = function() {
+refreshcreate()
+};
+document.getElementById("myRange2").oninput = function() {
+ refreshcreate()
+};
+document.getElementById("myRange3").oninput = function() {
+refreshcreate()
+};
+document.getElementById("myRange4").oninput = function() {
+ refreshcreate()
+};
+document.getElementById("myRange5").oninput = function() {
+    refreshcreate()
+
+};
+
+function refreshcreate() {
+    engine2.world.bodies.forEach((body)=>{Matter.Composite.remove(engine2.world, body)})
+    var sizeu = document.getElementById("myRange2").value
+     var ru =  document.getElementById("myRange3").value
+      var gu =  document.getElementById("myRange4").value
+      var bu =  document.getElementById("myRange5").value
+    var boxU = Bodies.rectangle(50 , 50 , 50, sizeu, { render: {strokeStyle: '#000000',lineWidth: 2, fillStyle: "rgb("+ru+","+gu+","+bu+")" }});
+   var rotation = document.getElementById("myRange").value
+    rotate(rotation, boxU)
+
+    World.add(world2, boxU);
+};
+var engine = Engine.create();
+var render = Render.create({
+    canvas: canvas,
+    engine: engine,
+    options: {
+      wireframes: false,
+      background: "rgb(0,0,0)"
+}});
+render.canvas.width = window.innerWidth;
+render.canvas.height = window.innerHeight;
+
+
+  // create runner
+var runner = Runner.create();
+
+Runner.run(runner, engine);
+Render.run(render);
+
+ var world = engine.world;
+  world.gravity.scale = 0;
+// create an engine
+
+var createmode = 0;
+document.onmousemove = function(event) {
+
+    pointerX = event.pageX;
+	pointerY = event.pageY;
+
+    newblockposition(pointerX,pointerY,createmode);
+
+
+}
+
+
+
+// create a renderer
+
+
+// create two boxes and a ground
+var boxA = Bodies.rectangle(400, 200, 80, 80);
+var boxB = Bodies.rectangle(450, 50, 80, 80 );
+var boxC = Bodies.circle(window.innerWidth/2, window.innerHeight/2, 1, { isStatic: true,  plugin: {
+      attractors: [
+        function(bodyA, bodyB) {
+          return {
+            x: (bodyA.position.x - bodyB.position.x) * 1e-7,
+            y: (bodyA.position.y - bodyB.position.y) * 1e-7,
+          };
+        }
+      ]
+    }});
+
+World.add(world, boxC);
+var ground = Bodies.rectangle(window.innerWidth/2, window.innerHeight, window.innerWidth, 60, { isStatic: true  });
+for (var i = 0; i < 150; i += 1) {
+  var body = Bodies.polygon(
+    Common.random(0, render.canvas.width),
+    Common.random(0, render.options.height),
+    Common.random(1, 5),
+    Common.random() > 0.9 ? Common.random(15, 25) : Common.random(5, 10)
+  );
+
+//  World.add(world, body);
+}
+function make_static(boxA,time) {
+    const doSomething1 = async () => {
+
+            await sleep(time);
+
+            Body.setStatic(boxA, true);
+
+
+  }
+  doSomething1()
+
+
+
+
+      }
+function newblockpos(x,y) {
+    var pointerx1=0;
+    var pointery1=0;
+    var angledrop=0;
+    if (x <= window.innerWidth/2 && y <= window.innerHeight/2) {
+        if (x <= y)  {
+         pointerx1 = 30;
+         pointery1 = y;
+        angledrop = y*90/window.innerHeight}
+            else {
+         pointerx1 = x;
+         pointery1 = 30;
+         angledrop = 270+(window.innerWidth-x)*90/window.innerWidth
+        }
+    }
+    else if (x <= window.innerWidth/2 && y > window.innerHeight/2){
+        if (x < (window.innerHeight-y))  {
+         pointerx1 = 30;
+         pointery1 = y;
+        angledrop = y*90/window.innerHeight
+        }
+            else {
+         pointerx1 = x;
+         pointery1 = window.innerHeight-30;
+         angledrop = 90+x*90/window.innerWidth
+        }
+    }
+    else if (x > window.innerWidth/2 && y <= window.innerHeight/2){
+        if ((window.innerWidth-x)< y)  {
+         pointerx1 = window.innerWidth-30;
+         pointery1 = y;
+         angledrop = 180+(window.innerHeight-y)*90/window.innerHeight
+            console.log("DDDDD")
+        }
+            else {
+         pointerx1 = x;
+         pointery1 = 30;
+         angledrop = 270+(window.innerWidth-x)*90/window.innerWidth
+            console.log("GGGGG")
+        }
+    }
+    else if (x >= window.innerWidth/2 && y >= window.innerHeight/2){
+        if ((window.innerWidth-x) < (window.innerHeight-y))  {
+         pointerx1 = window.innerWidth-30;
+         pointery1 = y;
+        angledrop = 180+(window.innerHeight-y)*90/window.innerHeight}
+
+            else {
+         pointerx1 = x;
+         pointery1 = window.innerHeight-30;
+         angledrop = 90+x*90/window.innerWidth
+        }
+    }
+    angledrop =  parseInt(angledrop);
+    return [pointerx1, pointery1,angledrop];
+
+
+}
+
+function newblockposition(x,y,createmode) {
+
+        const bodies = Matter.Composite.allBodies(engine.world);
+        const floor = bodies.filter(body => body.label === "boxB");
+        for (let i = 0; i < floor.length; i++) {
+          Matter.World.remove(engine.world, floor[i]);
+        }
+     if (createmode >= 1){
+        //engine.world.bodies.slice().forEach((floor => Matter.Composite.remove(engine.world, boxB));
+
+        var size = document.getElementById("myRange2").value;
+          var r =  document.getElementById("myRange3").value;
+          var g =  document.getElementById("myRange4").value;
+          var b =  document.getElementById("myRange5").value;
+        var pointerx = parseInt(x);
+        var pointery = parseInt(y);
+
+        let position = newblockpos(pointerx,pointery);
+
+        const posx = position[0],
+            posy = position[1];
+        console.log(posy);
+        var boxB = Bodies.rectangle(posx , posy , 50, size, { label: 'boxB', render: {strokeStyle: '#000000',lineWidth: 2, fillStyle: "rgb("+r+","+g+","+b+")" }});
+        console.log(boxB.label);
+
+      var rotation = document.getElementById("myRange").value;
+        rotate(rotation, boxB);
+
+
+      Composite.add(world, boxB);
+      make_static(boxB, 2);
+
+
+}};
+// add new body to the world
+function gravity()  {
+
+  var size = document.getElementById("myRange2").value;
+      var r =  document.getElementById("myRange3").value;
+      var g =  document.getElementById("myRange4").value;
+      var b =  document.getElementById("myRange5").value;
+    var pointerx = parseInt(pointerX);
+    var pointery = parseInt(pointerY);
+    let position = newblockpos(pointerx,pointery);
+    const posx = position[0],
+        posy = position[1];
+    console.log("x:"+posx);
+    console.log("y:"+posy);
+  var boxA = Bodies.rectangle(posx , posy , 50, size, { render: {strokeStyle: '#000000',lineWidth: 2, fillStyle: "rgb("+r+","+g+","+b+")" }});
+  var rotation = document.getElementById("myRange").value;
+    rotate(rotation, boxA);
+    var message = document.getElementById("comments1").value;
+
+
+  World.add(world, boxA);
+
+
+  make_static(boxA, 5000);
+
+
+
+
+  const bodies = JSON.stringify(boxA, (key, value) =>
+    (key === 'parent' || key === 'parts' || key === 'body') ? undefined : value);
+
+  console.log(bodies);
+  console.log(boxA);
+  console.log(pointerx);
+  console.log(pointery);
+  const grado = position[2];
+
+  console.log(rotation);
+  input(r,g,b,size,grado,message,rotation);
+  randomize();
+  document.body.setAttribute("onmousedown", "none");
+  createmode = 0;
+
+  const bodies1 = Matter.Composite.allBodies(engine.world);
+        const floor = bodies1.filter(body => body.label === "boxB");
+        for (let i = 0; i < floor.length; i++) {
+          Matter.World.remove(engine.world, floor[i]);
+        }
+
+
+
+}
+
+
+function myPoints(grado) {
+    var pointerx1=0;
+    var pointery1=0;
+    var grado = parseInt(grado)
+
+
+    if (grado < 45)  {
+         pointerx1 = 30;
+         pointery1 = grado*((window.innerHeight/2)/45);}
+    if (90 > grado && grado >= 45)  {
+         pointerx1 = 30;
+         pointery1 = grado*(window.innerHeight/90);
+        }
+    if (135 > grado && grado >= 90) {
+         pointerx1 = (grado-90)*window.innerWidth/90;
+         pointery1 = window.innerHeight-30;
+        }
+    if (135 <= grado && grado < 180) {
+         pointerx1 = (grado-90)*window.innerWidth/90;
+         pointery1 = window.innerHeight-30;
+        }
+   if (180 <= grado && grado < 225) {
+         pointerx1 = window.innerWidth-30;
+         pointery1 =  window.innerHeight-(grado-180)*(window.innerHeight/45);
+        }
+
+    if (225 <= grado && grado < 270)   {
+         pointerx1 = window.innerWidth-30;
+         pointery1 = window.innerHeight/2-(grado-225)*(window.innerHeight/2/45);
+                }
+    if (270 <= grado && grado < 315) {
+         pointerx1 =  window.innerWidth-((grado-270)*(window.innerWidth/45));
+         pointery1 = 30;
+        }
+    if (grado >= 315) {
+         pointerx1 = window.innerWidth/2-(grado-315)*(window.innerWidth/2/45)
+         pointery1 = 30;
+        }
+
+
+
+
+    console.log("ffff"+pointerx1)
+    return [pointerx1, pointery1];
+
+
+}
+
+
+function load(x)  {
+
+  const mylist = x.split(",");
+  var rotation = parseInt(mylist[1]);
+  var r = parseInt(mylist[3]);
+  var g = parseInt(mylist[4]);
+  var b = parseInt(mylist[5]);
+  var size = parseInt(mylist[2]);
+  var grado = parseInt(mylist[6]);
+
+  console.log(grado)
+  let position =myPoints(grado)
+  const posx = position[0],
+        posy = position[1];
+
+  var pointerx = parseInt(posx);
+  var pointery = parseInt(posy);
+
+   var x2 = Bodies.rectangle(pointerx , pointery , 50, size, { render: {strokeStyle: '#000000', lineWidth: 2, fillStyle: "rgb("+r+","+g+","+b+")" }});
+   rotate(rotation, x2);
+
+  make_static(x2, 5000);
+    World.add(world,x2);
+
+};
+
+
+function input(r,g,b,size,grado,message,angle) {
+
+    document.getElementById("r").value = r;
+    document.getElementById("g").value = g;
+    document.getElementById("b").value = b;
+    document.getElementById("angle").value = angle;
+    document.getElementById("grado").value = grado;
+    document.getElementById("comments").value = message;
+
+    document.getElementById("size").value = size;
+
+
+
+   document.getElementById('clickButton').click();
+
+
+
+
+
+
+}
+function showcreate() {
+    document.getElementById("contact-form1").style.display = "block";
+    refreshcreate();
+
+}
+$("#contact-form1").submit(function() {
+    document.body.setAttribute("onmousedown", "gravity()");
+    document.getElementById("contact-form1").style.display = "none";
+    createmode = 1;
+     console.log("ok")
+
+    return false; // avoid to execute the actual submit of the form.
+});
+
+
+
+ var CSRF_TOKEN = $('meta[name="csrf-token"]').attr('content');
+    $(document).ready(function() {
+
+      $("#contact-form").on("submit", function(e) {
+        e.preventDefault();
+        if ($("#contact-form [name='your_name']").val() === '') {
+          $("#contact-form [name='your_name']").css("border", "1px solid red");
+        } else if ($("#contact-form [name='your_email']").val() === '') {
+          $("#contact-form [name='your_email']").css("border", "1px solid red");
+        } else {
+          $("#loading-img").css("display", "block");
+          var sendData = $(this).serialize();
+          $.ajax({
+            type: "POST",
+            url: "get_response.php",
+            data: sendData,
+            success: function(data) {
+
+
+            }
+          });
+        }
+      });
+      $("#contact-form input").blur(function() {
+        var checkValue = $(this).val();
+        if (checkValue !== '') {
+          $(this).css("border", "1px solid #eeeeee");
+        }
+      });
+    });
+
+    function myFunction() {
+      var x = document.getElementById("myTopnav");
+      if (x.className === "topnav") {
+        if ($(window).width() > 750) {
+           window.location.href="enter.html";
+        }
+        else {
+        x.className += " responsive";
+      }  } else {
+        x.className = "topnav";
+      }
+    }
+
+// run the renderer
+Render.run(render);
+
+// create runner
+
+
+// run the engine
+Runner.run(runner, engine);
+
+
+</script>
+ <script>
+
+
+
+
+    </script>
+<!-- Cookie Consent by https://www.FreePrivacyPolicy.com -->
+<script type="text/javascript" src="//www.freeprivacypolicy.com/public/cookie-consent/3.1.0/cookie-consent.js"></script>
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', function () {
+cookieconsent.run({"notice_banner_type":"interstitial","consent_type":"express","palette":"dark","language":"en","website_name":"barnaba-barcellona.com","cookies_policy_url":"https://barnaba-barcellona.com/Privacypolicy.html"});
+});
+</script>
+
+</body>
+
+</html>
